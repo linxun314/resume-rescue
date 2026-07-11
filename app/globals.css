@@ -1,0 +1,98 @@
+/* 全局样式文件 */
+/* 引入 Tailwind CSS 的基础、组件和工具类 */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* A4 纸样式 - 用于简历预览 */
+.a4-paper {
+  /* A4 纸宽度：210mm */
+  width: 210mm;
+  /* A4 纸最小高度：297mm */
+  min-height: 297mm;
+  /* 白色背景 */
+  background: white;
+  /* 阴影效果，模拟纸张立体感 */
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  /* 水平居中 */
+  margin: 0 auto;
+  /* 内边距：15mm */
+  padding: 15mm;
+}
+
+/* 打印样式 - 隐藏非打印区域，只显示简历内容 */
+@media print {
+  /* 隐藏页面上所有元素 */
+  body * {
+    visibility: hidden;
+  }
+
+  /* 显示打印区域及其子元素 */
+  .print-area,
+  .print-area * {
+    visibility: visible;
+  }
+
+  /* 打印区域定位到页面左上角 */
+  .print-area {
+    /* 绝对定位 */
+    position: absolute;
+    /* 左对齐 */
+    left: 0;
+    /* 顶部对齐 */
+    top: 0;
+    /* 占满整页宽度 */
+    width: 100%;
+    /* 取消外边距 */
+    margin: 0;
+    /* 取消内边距 */
+    padding: 0;
+    /* 取消阴影 */
+    box-shadow: none;
+  }
+}
+
+/* 自定义滚动条样式 */
+::-webkit-scrollbar {
+  /* 滚动条宽度 */
+  width: 6px;
+}
+
+/* 滚动条轨道 */
+::-webkit-scrollbar-track {
+  /* 浅灰色背景 */
+  background: #f1f5f9;
+}
+
+/* 滚动条滑块 */
+::-webkit-scrollbar-thumb {
+  /* 灰色滑块 */
+  background: #94a3b8;
+  /* 圆角 */
+  border-radius: 3px;
+}
+
+/* 脉冲动画 - 用于当前步骤的进度点 */
+@keyframes pulse-animation {
+  /* 动画开始：正常大小 */
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  /* 动画中间：放大并变透明 */
+  50% {
+    transform: scale(1.2);
+    opacity: 0.7;
+  }
+  /* 动画结束：恢复原状 */
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* 应用脉冲动画的类 */
+.animate-pulse-custom {
+  /* 使用上面定义的脉冲动画 */
+  animation: pulse-animation 1.5s ease-in-out infinite;
+}
