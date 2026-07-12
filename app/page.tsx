@@ -2,22 +2,34 @@
 'use client';
 import { useState } from 'react';
 import AnxietyRelief from '@/components/AnxietyRelief';
+import ScenarioSelector from '@/components/ScenarioSelector';
 import QuestionFlow from '@/components/QuestionFlow';
 import ResultDisplay from '@/components/ResultDisplay';
-import { QUESTIONS } from '@/lib/prompts';
+import { getQuestionsByScenario, Scenario, Question } from '@/lib/prompts';
 
-type Step = 'anxiety-relief' | 'questions' | 'result';
+type Step = 'anxiety-relief' | 'scenario' | 'questions' | 'result';
 
 export default function Home() {
   const [step, setStep] = useState<Step>('anxiety-relief');
+  const [scenario, setScenario] = useState<Scenario>('internship');
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [result, setResult] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  // 从焦虑缓解页面进入场景选择
   const handleStart = () => {
+    setStep('scenario');
+  };
+
+  // 选择场景后加载对应问题集
+  const handleScenarioSelect = (selectedScenario: Scenario) => {
+    setScenario(selectedScenario);
+    setQuestions(getQuestionsByScenario(selectedScenario));
     setStep('questions');
   };
 
+  // 完成问题后调用AI生成简历
   const handleQuestionsComplete = async (finalAnswers: Record<string, string>) => {
     setAnswers(finalAnswers);
     setIsLoading(true);
@@ -28,7 +40,10 @@ export default function Home() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ answers: finalAnswers }),
+        body: JSON.stringify({
+          answers: finalAnswers,
+          scenario: scenario,
+        }),
       });
 
       const data = await response.json();
@@ -47,6 +62,7 @@ export default function Home() {
     }
   };
 
+  // 复制简历内容
   const handleCopy = () => {
     const text = generateCopyText(result);
     navigator.clipboard.writeText(text).then(() => {
@@ -56,8 +72,11 @@ export default function Home() {
     });
   };
 
+  // 重置流程
   const handleReset = () => {
     setStep('anxiety-relief');
+    setScenario('internship');
+    setQuestions([]);
     setAnswers({});
     setResult(null);
   };
@@ -81,14 +100,20 @@ export default function Home() {
   switch (step) {
     case 'anxiety-relief':
       return <AnxietyRelief onStart={handleStart} />;
+
+    case 'scenario':
+      return <ScenarioSelector onSelect={handleScenarioSelect} />;
+
     case 'questions':
       return (
         <QuestionFlow
-          questions={QUESTIONS}
+          questions={questions}
+          scenario={scenario}
           onComplete={handleQuestionsComplete}
-          onBack={() => setStep('anxiety-relief')}
+          onBack={() => setStep('scenario')}
         />
       );
+
     case 'result':
       return (
         <ResultDisplay
@@ -97,11 +122,13 @@ export default function Home() {
           onReset={handleReset}
         />
       );
+
     default:
       return <AnxietyRelief onStart={handleStart} />;
   }
 }
 
+// 生成可复制的简历文本
 function generateCopyText(result: any): string {
   let text = `【一句话介绍】\n${result.headline.optimized}\n\n`;
 
