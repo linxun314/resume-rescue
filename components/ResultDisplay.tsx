@@ -43,9 +43,10 @@ interface ResultDisplayProps {
   result: ResumeResult;
   onCopy: () => void;
   onReset: () => void;
+  onShowGenerator?: () => void;
 }
 
-export default function ResultDisplay({ result, onCopy, onReset }: ResultDisplayProps) {
+export default function ResultDisplay({ result, onCopy, onReset, onShowGenerator }: ResultDisplayProps) {
   const [viewMode, setViewMode] = useState<'psychology' | 'resume'>('psychology');
   const [showCelebration, setShowCelebration] = useState(false);
 
@@ -128,6 +129,28 @@ export default function ResultDisplay({ result, onCopy, onReset }: ResultDisplay
                 </div>
               </div>
             </div>
+
+            {/* Few-Shot学习入口 */}
+            {onShowGenerator && (
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl p-6">
+                <div className="flex items-start gap-4">
+                  <div className="text-4xl">📚</div>
+                  <div className="flex-1 text-left">
+                    <h3 className="font-bold text-gray-800 mb-2">想了解AI是如何生成简历的？</h3>
+                    <p className="text-sm text-gray-600 mb-4">
+                      查看Few-Shot学习示例，了解AI如何从优秀范本中学习STAR法则、强动词表达和量化成果技巧。
+                      你将看到原始表达 vs 优化后的对比，学习职场语言转换方法。
+                    </p>
+                    <button
+                      onClick={onShowGenerator}
+                      className="px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg font-medium hover:shadow-lg transition-all"
+                    >
+                      查看学习示例 →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <ResumePreview

@@ -22,6 +22,7 @@
 - **8道引导问题**：每题附带真实案例引导
 - **智能岗位推荐**：输入专业自动推荐相关岗位（30+专业）
 - **面试官视角翻译**：弱动词→强动词，STAR法则量化成果
+- **Few-Shot学习系统**：AI学习优秀范本，按STAR法则生成简历
 - **一键复制**：生成标准简历格式，直接粘贴使用
 
 ### 简历范本库
@@ -34,6 +35,7 @@
 
 - **前端**：Next.js 14 (App Router) + TypeScript + Tailwind CSS + Framer Motion
 - **后端**：DeepSeek Chat API
+- **AI增强**：Few-Shot Prompt系统（智能示例检索 + 结构化Prompt）
 - **设计心理学**：峰终定律、自我效能感、认知重构、宜家效应、锚定效应
 
 ## 本地运行
@@ -73,12 +75,15 @@ resume-rescue/
 │   ├── QuestionFlow.tsx          # 问题流程组件
 │   ├── PsychologyPanel.tsx       # 心理赋能面板
 │   ├── ResultDisplay.tsx         # 结果展示
-│   └── TipCard.tsx               # 提示卡片组件
+│   ├── TipCard.tsx               # 提示卡片组件
+│   └── ResumeGenerator.tsx       # Few-Shot学习展示组件
 ├── lib/
 │   ├── prompts.ts                # Prompt配置
 │   ├── jobRecommendations.ts     # 岗位推荐映射
 │   ├── resumeTypes.ts            # 简历类型定义
-│   └── resumeData.ts             # 简历范本数据
+│   ├── resumeData.ts             # 简历范本数据
+│   ├── fewShotExamples.ts        # Few-Shot示例库
+│   └── fewShotPromptGenerator.ts # Few-Shot Prompt生成器
 └── README.md
 ```
 
@@ -95,6 +100,14 @@ resume-rescue/
 - **自我效能感**：从回答中提取"成功证据"
 - **认知重构**：把"没有经历"重构为"没有发现经历"
 - **宜家效应**：用户参与越多，越认可结果
+
+### Few-Shot Prompt架构
+- **智能示例检索**：根据用户输入特征动态选择最相关的3-5个示例
+- **结构化Prompt**：使用XML标签组织（角色、任务、示例、输入、约束）
+- **STAR法则**：情境-任务-行动-结果四要素结构
+- **强动词映射**：弱动词→强动词对照表（参与→策划、协助→执行）
+- **量化成果**：具体数字展示结果（提升25%、增长75%、用户3000+）
+- **示例多样化**：覆盖课程项目、社团活动、创业经历、自学项目等不同类型
 
 ## 许可
 

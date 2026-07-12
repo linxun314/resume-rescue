@@ -1,6 +1,7 @@
-// app/api/generate/route.ts - API路由（心理赋能版）
+// app/api/generate/route.ts - API路由（Few-Shot增强版）
 import { NextRequest, NextResponse } from 'next/server';
 import { RESUME_SYSTEM_PROMPT, RESUME_USER_PROMPT_TEMPLATE, Scenario } from '@/lib/prompts';
+import { generateFewShotPrompt } from '@/lib/fewShotPromptGenerator';
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,18 +18,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 构建用户提示词
-    let userPrompt = RESUME_USER_PROMPT_TEMPLATE;
-    userPrompt = userPrompt.replace('{{major}}', answers.major || answers.q1 || '未提供');
-    userPrompt = userPrompt.replace('{{direction}}', answers.direction || '未提供');
-    userPrompt = userPrompt.replace('{{scenario}}', scenario === 'internship' ? '找实习' : '找工作');
+    // 构建用户提示词 - 使用Few-Shot Prompt生成器
+    const major = answers.major || answers.q1 || '未提供';
+    const direction = answers.direction || '未提供';
+    const targetJob = `${major}相关${direction !== '未提供' ? `·${direction}` : ''}岗位`;
 
-    // 根据场景构建回答内容
+    // 整合用户回答为经历描述
     const answersText = Object.entries(answers)
       .filter(([key]) => key !== 'major' && key !== 'direction')
       .map(([key, value]) => `${key.toUpperCase()}: ${value}`)
       .join('\n');
-    userPrompt = userPrompt.replace('{{answers}}', answersText || '未提供');
+
+    // 生成Few-Shot Prompt
+    const fewShotPrompt = generateFewShotPrompt(
+      answersText || '未提供',
+      targetJob,
+      {
+        name: answers.name || '用户',
+        education: answers.school || '某大学',
+        major: major,
+        graduationYear: answers.graduation || '2025',
+      }
+    );
+
+    // 使用Few-Shot Prompt作为用户提示词
+    const userPrompt = fewShotPrompt;
 
     // 调用 DeepSeek API（带重试逻辑）
     let response;

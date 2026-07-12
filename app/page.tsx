@@ -1,13 +1,14 @@
-// app/page.tsx - 主页面（设计心理学版）
+// app/page.tsx - 主页面（Few-Shot增强版）
 'use client';
 import { useState } from 'react';
 import AnxietyRelief from '@/components/AnxietyRelief';
 import ScenarioSelector from '@/components/ScenarioSelector';
 import QuestionFlow from '@/components/QuestionFlow';
 import ResultDisplay from '@/components/ResultDisplay';
+import ResumeGenerator from '@/components/ResumeGenerator';
 import { getQuestionsByScenario, Scenario, Question } from '@/lib/prompts';
 
-type Step = 'anxiety-relief' | 'scenario' | 'questions' | 'result';
+type Step = 'anxiety-relief' | 'scenario' | 'questions' | 'result' | 'generator';
 
 export default function Home() {
   const [step, setStep] = useState<Step>('anxiety-relief');
@@ -60,6 +61,11 @@ export default function Home() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // 显示Few-Shot生成器
+  const handleShowGenerator = () => {
+    setStep('generator');
   };
 
   // 复制简历内容
@@ -120,7 +126,50 @@ export default function Home() {
           result={result}
           onCopy={handleCopy}
           onReset={handleReset}
+          onShowGenerator={handleShowGenerator}
         />
+      );
+
+    case 'generator':
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8 px-4">
+          <div className="max-w-4xl mx-auto">
+            {/* 返回按钮 */}
+            <button
+              onClick={() => setStep('result')}
+              className="mb-6 flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              返回结果页
+            </button>
+
+            {/* 标题 */}
+            <div className="text-center mb-8">
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
+                Few-Shot 学习展示
+              </h1>
+              <p className="text-gray-600">
+                了解AI是如何学习优秀范本，为你生成高质量简历的
+              </p>
+            </div>
+
+            {/* Few-Shot生成器 */}
+            <ResumeGenerator
+              userInfo={{
+                name: answers.name || '用户',
+                education: answers.school || '某大学',
+                major: answers.q1 || answers.major || '未提供',
+                graduationYear: answers.graduation || '2025',
+              }}
+              targetJob={`${answers.q1 || answers.major || '未提供'}相关岗位`}
+              experiences={Object.entries(answers)
+                .filter(([key]) => !['name', 'school', 'q1', 'major', 'graduation'].includes(key))
+                .map(([, value]) => value as string)}
+            />
+          </div>
+        </div>
       );
 
     default:
