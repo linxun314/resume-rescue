@@ -158,14 +158,14 @@ export default function Home() {
             {/* Few-Shot生成器 */}
             <ResumeGenerator
               userInfo={{
-                name: answers.name || '用户',
-                education: answers.school || '某大学',
-                major: answers.q1 || answers.major || '未提供',
-                graduationYear: answers.graduation || '2025',
+                name: '用户',
+                education: '某大学',
+                major: answers.q1 || '未提供',
+                graduationYear: '2025',
               }}
-              targetJob={`${answers.q1 || answers.major || '未提供'}相关岗位`}
+              targetJob={`${answers.q1 || '未提供'}相关岗位`}
               experiences={Object.entries(answers)
-                .filter(([key]) => !['name', 'school', 'q1', 'major', 'graduation'].includes(key))
+                .filter(([key]) => key !== 'q1' && key !== 'direction')
                 .map(([, value]) => value as string)}
             />
           </div>

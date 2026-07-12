@@ -19,13 +19,14 @@ export async function POST(request: NextRequest) {
     }
 
     // 构建用户提示词 - 使用Few-Shot Prompt生成器
-    const major = answers.major || answers.q1 || '未提供';
+    // 用户回答字段是 q1, q2, q3... 格式
+    const major = answers.q1 || '未提供';
     const direction = answers.direction || '未提供';
     const targetJob = `${major}相关${direction !== '未提供' ? `·${direction}` : ''}岗位`;
 
-    // 整合用户回答为经历描述
+    // 整合用户回答为经历描述（排除q1，因为它是专业信息）
     const answersText = Object.entries(answers)
-      .filter(([key]) => key !== 'major' && key !== 'direction')
+      .filter(([key]) => key !== 'q1' && key !== 'direction')
       .map(([key, value]) => `${key.toUpperCase()}: ${value}`)
       .join('\n');
 
@@ -34,10 +35,10 @@ export async function POST(request: NextRequest) {
       answersText || '未提供',
       targetJob,
       {
-        name: answers.name || '用户',
-        education: answers.school || '某大学',
+        name: '用户',
+        education: '某大学',
         major: major,
-        graduationYear: answers.graduation || '2025',
+        graduationYear: '2025',
       }
     );
 
