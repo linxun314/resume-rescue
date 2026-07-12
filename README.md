@@ -2,7 +2,7 @@
 
 > 没经验、没实习、没奖项？别怕，你的价值只是还没被翻译。
 
-在线体验：https://resume-rescue-rescue.netlify.app
+在线体验：https://resume-rescue.netlify.app
 
 ## 这是什么？
 
@@ -117,4 +117,4 @@ MIT
 
 **作者**：linxun314
 
-**在线体验**：https://resume-rescue-rescue.netlify.app
+**在线体验**：https://resume-rescue.netlify.app
