@@ -100,13 +100,31 @@ export async function POST(request: NextRequest) {
     let result;
 
     try {
+      // 先尝试直接解析
       result = JSON.parse(content);
     } catch {
-      // 尝试用正则提取JSON
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        result = JSON.parse(jsonMatch[0]);
-      } else {
+      try {
+        // 移除可能的 markdown 代码块标记
+        let cleanedContent = content
+          .replace(/```json\s*/gi, '')
+          .replace(/```\s*/gi, '')
+          .trim();
+
+        // 尝试提取 JSON 对象（找到第一个 { 和最后一个 }）
+        const firstBrace = cleanedContent.indexOf('{');
+        const lastBrace = cleanedContent.lastIndexOf('}');
+
+        if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+          const jsonStr = cleanedContent.substring(firstBrace, lastBrace + 1);
+          result = JSON.parse(jsonStr);
+        } else {
+          return NextResponse.json(
+            { success: false, error: 'AI 返回格式异常，请重试' },
+            { status: 500 }
+          );
+        }
+      } catch (parseError) {
+        console.error('JSON 解析失败:', parseError);
         return NextResponse.json(
           { success: false, error: 'AI 返回格式异常，请重试' },
           { status: 500 }

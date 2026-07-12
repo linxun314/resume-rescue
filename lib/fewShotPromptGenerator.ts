@@ -25,62 +25,29 @@ export function generateFewShotPrompt(
   // 1. 选择Few-Shot示例
   const examples = selectFewShotExamples(userInput, targetJob, 3);
 
-  // 2. 构建Prompt
-  const prompt = `<role>
-你是一位资深的简历撰写专家，擅长将大学生的普通经历转化为职场语言。
-你熟悉STAR法则（情境-任务-行动-结果），能够用强动词和量化数据提升简历质量。
-</role>
-
-<task>
-请根据用户提供的经历信息，生成一份符合职场标准的简历内容。
-
-要求：
-- 使用STAR法则描述每个经历
-- 用强动词替代弱动词（如"策划"、"优化"、"建立"替代"参与"、"协助"）
-- 量化成果，用具体数字展示结果
-- 保持简洁，每个经历控制在80-100字
-- 遵循诚信原则，不虚构经历，只翻译真实内容
+  // 2. 构建Prompt（不重复系统提示词中已有的内容）
+  const prompt = `<task>
+根据用户提供的经历信息，生成简历内容。请严格按照指定JSON格式输出。
 </task>
 
 <writing_standards>
-## 简历撰写标准
-
-1. **STAR法则**：每个经历包含情境(S)、任务(T)、行动(A)、结果(R)四个要素
-2. **强动词表达**：使用"策划"、"设计"、"优化"、"建立"等强动词
-3. **量化成果**：用具体数字展示结果，如"提升25%"、"增长75%"、"用户3000+"
-4. **一页纸原则**：控制在教育背景+项目经历+校园实践+技能证书+自我评价
-5. **真实性**：所有经历均为真实，绝不虚构、绝不夸大、绝不造假
-
-## 弱动词 → 强动词对照表
-
-| 弱动词 | 强动词 |
-|--------|--------|
-| 参与 | 策划、组织、协调 |
-| 协助 | 执行、实施、推进 |
-| 负责 | 管理、主导、统筹 |
-| 做了 | 设计、开发、建立 |
-| 学习 | 掌握、运用、精通 |
+简历撰写标准：
+1. STAR法则：情境(S)-任务(T)-行动(A)-结果(R)
+2. 强动词：用"策划"、"优化"、"建立"替代"参与"、"协助"
+3. 量化成果：用具体数字展示结果（如提升25%、增长75%）
+4. 真实性：只翻译真实经历，绝不虚构
 </writing_standards>
 
 <few_shot_examples>
-以下是${examples.length}个优秀简历示例，请学习其写作风格：
+${examples.length}个优秀简历示例，请学习其写作风格：
 
-${examples.map((example, index) => `
-### 示例${index + 1}（${example.category}）
-
-**原始输入：**
-"${example.input}"
-
-**优化输出：**
-${example.output}
-
-**学习要点：**
-- ${getLearningPoints(example)}
+${examples.map((example, index) => `示例${index + 1}（${example.category}）：
+原始输入："${example.input}"
+优化输出：${example.output}
 `).join('\n')}
 </few_shot_examples>
 
 <user_info>
-用户基本信息：
 - 姓名：${userInfo.name}
 - 学校：${userInfo.education}
 - 专业：${userInfo.major}
@@ -89,21 +56,12 @@ ${example.output}
 </user_info>
 
 <user_input>
-用户提供的经历信息：
+用户经历信息：
 ${userInput}
 </user_input>
 
-<constraints>
-重要约束：
-1. 不虚构经历，只翻译用户提供的真实内容
-2. 如果用户信息不足，提示用户补充，不要猜测
-3. 保持STAR结构，每个经历包含情境、任务、行动、结果
-4. 用具体数字量化成果，如果用户未提供数字，提示用户补充
-5. 输出格式：JSON格式，包含以下字段
-</constraints>
-
 <output_format>
-请严格按照以下JSON格式输出：
+请严格按照以下JSON格式输出（不要输出任何其他内容，不要用代码块包裹）：
 
 {
   "confidence_boost": {
@@ -137,9 +95,7 @@ ${userInput}
   },
   "interview_tips": ["面试建议1", "面试建议2", "面试建议3"]
 }
-</output_format>
-
-请现在开始生成简历内容：`;
+</output_format>`;
 
   return prompt;
 }
