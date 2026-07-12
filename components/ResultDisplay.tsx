@@ -108,6 +108,26 @@ export default function ResultDisplay({ result, onCopy, onReset }: ResultDisplay
                 查看简历内容 📄
               </button>
             </div>
+
+            {/* 简历范本入口 */}
+            <div className="bg-gradient-to-br from-purple-50 to-blue-50 border-2 border-purple-200 rounded-2xl p-6">
+              <div className="flex items-start gap-4">
+                <div className="text-4xl">📋</div>
+                <div className="flex-1 text-left">
+                  <h3 className="font-bold text-gray-800 mb-2">需要简历范本参考？</h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    我们为你准备了4类高分简历范本，涵盖通用应届生、产品运营、商科创业、技术自学方向，
+                    所有范本遵循STAR法则、一页纸原则、真实经历转化。
+                  </p>
+                  <a
+                    href="/templates"
+                    className="inline-block px-6 py-2 bg-gradient-to-r from-purple-500 to-blue-600 text-white rounded-lg font-medium hover:shadow-lg transition-all"
+                  >
+                    查看简历范本 →
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
         ) : (
           <ResumePreview
