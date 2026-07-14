@@ -5,7 +5,7 @@
 @tailwind utilities;
 
 /*
- * JS 加载兜底：如果 JS 加载失败，framer-motion 的内联 style（opacity:0）
+ * JS 加载兜底：如果 JS 加载失败，framer-motion 的内联 style（opacity:0, scale:0）
  * 会导致页面白屏。用 CSS !important 覆盖内联样式，2秒后强制显示。
  * JS 正常时 framer-motion 动画在 0.5-1s 内完成，不会受影响。
  */
@@ -15,8 +15,11 @@
     transform: none !important;
   }
 }
+
+/* 强制所有可能被 framer-motion 隐藏的元素在 2 秒后可见 */
 div[style*="opacity: 0"],
 div[style*="opacity:0"],
+div[style*="scale(0)"],
 button[style*="opacity: 0"],
 button[style*="opacity:0"],
 label[style*="opacity: 0"],

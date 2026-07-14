@@ -67,8 +67,8 @@ export default function ScenarioSelector({ onSelect }: ScenarioSelectorProps) {
         {/* 标题区域 */}
         <div className="text-center mb-12">
           <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
+            initial={{ scale: 1 }}
+            animate={{ scale: 1.1 }}
             transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
             className="text-5xl mb-4"
           >

@@ -52,8 +52,8 @@ export default function AnxietyRelief({ onStart }: AnxietyReliefProps) {
           {/* 标题区 */}
           <div className="text-center mb-6">
             <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
+              initial={{ scale: 1 }}
+              animate={{ scale: 1.1 }}
               transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
               className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mb-4 shadow-lg"
             >
