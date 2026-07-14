@@ -42,9 +42,9 @@ export default function AnxietyRelief({ onStart }: AnxietyReliefProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
       <div className="max-w-md w-full">
-        {/* 主卡片 */}
+        {/* 主卡片 - 默认可见，仅用位移动画 */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 1, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           className="bg-white rounded-3xl shadow-xl p-6 md:p-8 border border-gray-100"
@@ -79,11 +79,8 @@ export default function AnxietyRelief({ onStart }: AnxietyReliefProps) {
             ))}
           </div>
 
-          {/* 承诺勾选 */}
-          <motion.label
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.8 }}
+          {/* 承诺勾选 - 默认可见 */}
+          <label
             className="flex items-center gap-3 mb-6 cursor-pointer p-3 rounded-xl hover:bg-gray-50 transition-colors"
           >
             <input
@@ -95,13 +92,10 @@ export default function AnxietyRelief({ onStart }: AnxietyReliefProps) {
             <span className="text-gray-700 text-sm">
               我承诺展示真实的自己——因为真实经历才最有力
             </span>
-          </motion.label>
+          </label>
 
-          {/* 开始按钮 */}
-          <motion.button
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1 }}
+          {/* 开始按钮 - 默认可见 */}
+          <button
             onClick={onStart}
             disabled={!isChecked}
             className={`w-full py-4 rounded-2xl font-bold text-lg transition-all duration-300 ${
@@ -111,18 +105,13 @@ export default function AnxietyRelief({ onStart }: AnxietyReliefProps) {
             }`}
           >
             {isChecked ? '准备好了，开始发现我的价值！' : '请先勾选承诺'}
-          </motion.button>
+          </button>
         </motion.div>
 
-        {/* 底部提示 */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.2 }}
-          className="text-center text-gray-400 text-sm mt-6"
-        >
+        {/* 底部提示 - 默认可见 */}
+        <p className="text-center text-gray-400 text-sm mt-6">
           预计需要 5-8 分钟 · 请找一个安静的环境
-        </motion.p>
+        </p>
       </div>
     </div>
   );

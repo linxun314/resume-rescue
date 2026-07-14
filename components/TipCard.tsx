@@ -14,7 +14,7 @@ interface TipCardProps {
 export default function TipCard({ icon, title, content, index, highlight = false }: TipCardProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 1, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.1 * index, duration: 0.4 }}
       className={`relative flex items-start gap-4 p-4 rounded-2xl transition-all ${
