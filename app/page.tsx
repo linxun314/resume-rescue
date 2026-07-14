@@ -1,6 +1,10 @@
 // app/page.tsx - 主页面（Few-Shot增强版）
 'use client';
 import { useState } from 'react';
+import { showToast } from '@/lib/useToast';
+import { track } from '@/lib/analytics';
+import ToastContainer from '@/components/ToastContainer';
+import LoadingProgress from '@/components/LoadingProgress';
 import AnxietyRelief from '@/components/AnxietyRelief';
 import ScenarioSelector from '@/components/ScenarioSelector';
 import QuestionFlow from '@/components/QuestionFlow';
@@ -37,11 +41,13 @@ export default function Home() {
 
   // 从焦虑缓解页面进入场景选择
   const handleStart = () => {
+    track('flow_started');
     setStep('scenario');
   };
 
   // 选择场景后加载对应问题集
   const handleScenarioSelect = (selectedScenario: Scenario) => {
+    track('scenario_selected', { scenario: selectedScenario });
     setScenario(selectedScenario);
     if (selectedScenario === 'graduate') {
       setStep('graduate-info');
@@ -53,8 +59,10 @@ export default function Home() {
 
   // 完成问题后调用AI生成简历
   const handleQuestionsComplete = async (finalAnswers: Record<string, string>) => {
+    track('questions_completed');
     setAnswers(finalAnswers);
     setIsLoading(true);
+    const startTime = Date.now();
 
     try {
       const response = await fetch('/api/generate', {
@@ -71,14 +79,17 @@ export default function Home() {
       const data = await response.json();
 
       if (data.success) {
+        track('api_generate_success', { latency_ms: Date.now() - startTime });
         setResult(data.result);
         setStep('result');
       } else {
-        alert(data.error || '生成失败，请重试');
+        track('api_generate_error', { error: data.error || 'unknown' });
+        showToast(data.error || '生成失败，请重试', 'error');
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('生成失败，请重试');
+      track('api_generate_error', { error: 'network_error' });
+      showToast('生成失败，请重试', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -91,11 +102,12 @@ export default function Home() {
 
   // 复制简历内容
   const handleCopy = () => {
+    track('result_copied');
     const text = generateCopyText(result);
     navigator.clipboard.writeText(text).then(() => {
-      alert('已复制到剪贴板！');
+      showToast('已复制到剪贴板！', 'success');
     }).catch(() => {
-      alert('复制失败，请手动复制');
+      showToast('复制失败，请手动复制', 'error');
     });
   };
 
@@ -117,31 +129,29 @@ export default function Home() {
     );
   };
 
-  // 加载中状态
+  // 加载中状态 - 分步进度感知
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full shadow-lg mb-4 animate-pulse">
-            <span className="text-4xl">✨</span>
-          </div>
-          <h2 className="text-xl font-bold text-gray-800 mb-2">正在发现你的隐藏价值...</h2>
-          <p className="text-gray-500">这可能需要 10-20 秒</p>
-        </div>
-      </div>
+      <>
+        <ToastContainer />
+        <LoadingProgress />
+      </>
     );
   }
 
   // 根据步骤渲染不同组件
+  let content;
   switch (step) {
     case 'anxiety-relief':
-      return <AnxietyRelief onStart={handleStart} />;
+      content = <AnxietyRelief onStart={handleStart} />;
+      break;
 
     case 'scenario':
-      return <ScenarioSelector onSelect={handleScenarioSelect} />;
+      content = <ScenarioSelector onSelect={handleScenarioSelect} />;
+      break;
 
     case 'questions':
-      return (
+      content = (
         <QuestionFlow
           questions={questions}
           scenario={scenario}
@@ -149,9 +159,10 @@ export default function Home() {
           onBack={() => setStep('scenario')}
         />
       );
+      break;
 
     case 'result':
-      return (
+      content = (
         <ResultDisplay
           result={result}
           onCopy={handleCopy}
@@ -159,9 +170,10 @@ export default function Home() {
           onShowGenerator={handleShowGenerator}
         />
       );
+      break;
 
     case 'generator':
-      return (
+      content = (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8 px-4">
           <div className="max-w-4xl mx-auto">
             {/* 返回按钮 */}
@@ -203,7 +215,7 @@ export default function Home() {
       );
 
     case 'graduate-info':
-      return (
+      content = (
         <GraduateBasicInfoForm
           data={graduateBasicInfo}
           onChange={setGraduateBasicInfo}
@@ -211,9 +223,10 @@ export default function Home() {
           onNext={() => setStep('graduate-experience-select')}
         />
       );
+      break;
 
     case 'graduate-experience-select':
-      return (
+      content = (
         <GraduateExperienceSelector
           selectedTypes={selectedExpTypes}
           onToggle={handleToggleExpType}
@@ -221,9 +234,10 @@ export default function Home() {
           onNext={() => setStep('graduate-experience-form')}
         />
       );
+      break;
 
     case 'graduate-experience-form':
-      return (
+      content = (
         <GraduateExperienceForm
           selectedTypes={selectedExpTypes}
           onDataChange={setGraduateExpData}
@@ -232,9 +246,10 @@ export default function Home() {
           onComplete={() => setStep('graduate-result')}
         />
       );
+      break;
 
     case 'graduate-result':
-      return (
+      content = (
         <GraduateResumeResult
           basicInfo={graduateBasicInfo}
           experienceData={graduateExpData}
@@ -242,10 +257,18 @@ export default function Home() {
           onReset={handleReset}
         />
       );
+      break;
 
     default:
-      return <AnxietyRelief onStart={handleStart} />;
+      content = <AnxietyRelief onStart={handleStart} />;
   }
+
+  return (
+    <>
+      <ToastContainer />
+      {content}
+    </>
+  );
 }
 
 // 生成可复制的简历文本

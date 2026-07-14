@@ -13,7 +13,7 @@ const TIPS = [
   {
     icon: '😰',
     title: '你不是一个人',
-    content: '90%的大学生都有简历焦虑\n这种感觉太正常了',
+    content: '简历焦虑是大学生求职中最常见的情绪之一\n很多人都有过同样的感受',
     highlight: false,
   },
   {
@@ -30,14 +30,8 @@ const TIPS = [
   },
   {
     icon: '⚖️',
-    title: '我们的底线',
-    content: '这个工具只会帮你梳理真实经历\n绝不虚构、绝不夸大、绝不造假',
-    highlight: true,
-  },
-  {
-    icon: '🌱',
-    title: '更重要的事',
-    content: '简历只能包装已有的价值\n走出舒适圈，去创造真实经历吧',
+    title: '我们的承诺',
+    content: '展示真实的自己\n因为真实经历才最有力',
     highlight: true,
   },
 ];
@@ -99,7 +93,7 @@ export default function AnxietyRelief({ onStart }: AnxietyReliefProps) {
               className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
             />
             <span className="text-gray-700 text-sm">
-              我愿意认真回答问题，用真实经历来梳理
+              我承诺展示真实的自己——因为真实经历才最有力
             </span>
           </motion.label>
 

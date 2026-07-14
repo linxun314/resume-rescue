@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Send, ChevronDown, ChevronUp, Lightbulb, Briefcase } from 'lucide-react';
 import { Question, Scenario } from '@/lib/prompts';
 import { recommendJobs, JobRecommendation } from '@/lib/jobRecommendations';
+import { showToast } from '@/lib/useToast';
 
 interface QuestionFlowProps {
   questions: Question[];
@@ -49,7 +50,7 @@ export default function QuestionFlow({ questions, scenario, onComplete, onBack }
 
   const handleNext = () => {
     if (!answers[currentQuestion.id]?.trim()) {
-      alert('请先回答当前问题');
+      showToast('请先回答当前问题', 'info');
       return;
     }
 

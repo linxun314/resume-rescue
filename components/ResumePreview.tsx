@@ -1,6 +1,7 @@
 // components/ResumePreview.tsx - 简历预览组件（面试官视角版）
 'use client';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import PdfExport from './PdfExport';
 
 interface ResumePreviewProps {
   result: {
@@ -31,6 +32,7 @@ interface ResumePreviewProps {
 
 export default function ResumePreview({ result, onCopy }: ResumePreviewProps) {
   const [showMode, setShowMode] = useState<'optimized' | 'realistic'>('optimized');
+  const resumeRef = useRef<HTMLDivElement>(null);
 
   return (
     <div className="space-y-6">
@@ -62,7 +64,7 @@ export default function ResumePreview({ result, onCopy }: ResumePreviewProps) {
       </div>
 
       {/* 简历内容 */}
-      <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm space-y-6">
+      <div ref={resumeRef} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm space-y-6">
 
         {/* 一句话介绍 */}
         <div>
@@ -159,13 +161,16 @@ export default function ResumePreview({ result, onCopy }: ResumePreviewProps) {
         )}
       </div>
 
-      {/* 复制按钮 */}
-      <button
-        onClick={onCopy}
-        className="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-2xl font-bold text-lg shadow-lg hover:shadow-xl hover:scale-[1.01] transition-all"
-      >
-        📋 复制到简历
-      </button>
+      {/* 操作按钮 */}
+      <div className="flex gap-3">
+        <button
+          onClick={onCopy}
+          className="flex-1 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-2xl font-bold text-lg shadow-lg hover:shadow-xl hover:scale-[1.01] transition-all"
+        >
+          📋 复制到简历
+        </button>
+        <PdfExport targetRef={resumeRef} fileName="我的简历" />
+      </div>
     </div>
   );
 }

@@ -1,8 +1,10 @@
 // components/ResultDisplay.tsx - 结果展示组件（设计心理学版）
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PsychologyPanel from './PsychologyPanel';
 import ResumePreview from './ResumePreview';
+import SatisfactionSurvey from './SatisfactionSurvey';
+import { motion } from 'framer-motion';
 
 interface ConfidenceBoost {
   hidden_value: string;
@@ -49,6 +51,17 @@ interface ResultDisplayProps {
 export default function ResultDisplay({ result, onCopy, onReset, onShowGenerator }: ResultDisplayProps) {
   const [viewMode, setViewMode] = useState<'psychology' | 'resume'>('psychology');
   const [showCelebration, setShowCelebration] = useState(false);
+  const [showSuccessAnimation, setShowSuccessAnimation] = useState(true);
+  const [showSurvey, setShowSurvey] = useState(false);
+
+  // 初次进入时显示成功动画
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowSuccessAnimation(false);
+      setShowSurvey(true);
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleCopy = () => {
     onCopy();
@@ -96,6 +109,17 @@ export default function ResultDisplay({ result, onCopy, onReset, onShowGenerator
         {/* 内容区 */}
         {viewMode === 'psychology' ? (
           <div className="space-y-6">
+            {/* 满意度评分 */}
+            {showSurvey && (
+              <SatisfactionSurvey
+                onSubmit={(rating, tags) => {
+                  console.log('[Feedback]', { rating, tags });
+                  setShowSurvey(false);
+                }}
+                onDismiss={() => setShowSurvey(false)}
+              />
+            )}
+
             {/* 心理赋能面板 - 峰终定律的"峰" */}
             <PsychologyPanel confidenceBoost={result.confidence_boost} />
 
@@ -151,6 +175,20 @@ export default function ResultDisplay({ result, onCopy, onReset, onShowGenerator
                 </div>
               </div>
             )}
+
+            {/* 成长鼓励 - 峰终定律的"终"收尾 */}
+            <div className="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl p-6">
+              <div className="flex items-start gap-4">
+                <div className="text-4xl">🌱</div>
+                <div className="text-left">
+                  <h3 className="font-bold text-gray-800 mb-2">这只是开始</h3>
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    简历帮你梳理了已有的价值，而更大的价值等着你去创造。
+                    带着这份自信，去尝试、去体验、去走出舒适圈——你的下一段经历，会让这份简历更精彩。
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         ) : (
           <ResumePreview
@@ -176,7 +214,7 @@ export default function ResultDisplay({ result, onCopy, onReset, onShowGenerator
 
             <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-5 mb-6 border border-green-100">
               <p className="text-gray-800 leading-relaxed text-center font-medium">
-                你刚刚做了 90% 大学生都不会做的事：<br/>
+                你刚刚做了一件很多人不会做的事：<br/>
                 <span className="text-green-600">认真梳理自己的价值</span>
               </p>
             </div>
@@ -218,10 +256,52 @@ export default function ResultDisplay({ result, onCopy, onReset, onShowGenerator
               onClick={() => setShowCelebration(false)}
               className="w-full py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-2xl font-bold text-lg shadow-lg hover:shadow-xl transition-all"
             >
-              去投简历！我已经准备好了 💪
+              我已经准备好了 💪
             </button>
           </div>
         </div>
+      )}
+
+      {/* 成功动画 - 自我效能感"成功经验"反馈 */}
+      {showSuccessAnimation && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center z-40"
+        >
+          <motion.div
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: 'spring', duration: 0.8 }}
+            className="text-center"
+          >
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: 'spring' }}
+              className="inline-flex items-center justify-center w-28 h-28 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full shadow-xl mb-6"
+            >
+              <span className="text-6xl">✅</span>
+            </motion.div>
+            <motion.h2
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              className="text-2xl font-bold text-gray-800 mb-2"
+            >
+              你的简历已经准备好了！
+            </motion.h2>
+            <motion.p
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.8 }}
+              className="text-gray-500"
+            >
+              你刚刚认真梳理了自己的经历，这本身就是一种能力
+            </motion.p>
+          </motion.div>
+        </motion.div>
       )}
     </div>
   );

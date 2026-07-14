@@ -3,10 +3,33 @@ import { NextRequest, NextResponse } from 'next/server';
 import { RESUME_SYSTEM_PROMPT, RESUME_USER_PROMPT_TEMPLATE, Scenario } from '@/lib/prompts';
 import { generateFewShotPrompt } from '@/lib/fewShotPromptGenerator';
 
+const PROMPT_VERSION = 'v1.2'; // 当前 Prompt 版本
+const API_TIMEOUT_MS = 30000;  // 30秒超时
+
+async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: number): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, { ...options, signal: controller.signal });
+    return res;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export async function POST(request: NextRequest) {
+  const startTime = Date.now();
   try {
     const body = await request.json();
     const { answers, scenario } = body;
+
+    console.log(JSON.stringify({
+      event: 'api_generate_called',
+      scenario,
+      prompt_version: PROMPT_VERSION,
+      question_count: Object.keys(answers || {}).length,
+      timestamp: new Date().toISOString(),
+    }));
 
     // 从环境变量获取API密钥
     const apiKey = process.env.DEEPSEEK_API_KEY;
@@ -45,13 +68,13 @@ export async function POST(request: NextRequest) {
     // 使用Few-Shot Prompt作为用户提示词
     const userPrompt = fewShotPrompt;
 
-    // 调用 DeepSeek API（带重试逻辑）
+    // 调用 DeepSeek API（带超时+指数退避重试）
     let response;
-    let retries = 3;
+    const MAX_RETRIES = 3;
 
-    while (retries > 0) {
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
       try {
-        response = await fetch('https://api.deepseek.com/chat/completions', {
+        response = await fetchWithTimeout('https://api.deepseek.com/chat/completions', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -60,33 +83,35 @@ export async function POST(request: NextRequest) {
           body: JSON.stringify({
             model: 'deepseek-chat',
             messages: [
-              {
-                role: 'system',
-                content: RESUME_SYSTEM_PROMPT,
-              },
-              {
-                role: 'user',
-                content: userPrompt,
-              },
+              { role: 'system', content: RESUME_SYSTEM_PROMPT },
+              { role: 'user', content: userPrompt },
             ],
             temperature: 0.7,
           }),
-        });
+        }, API_TIMEOUT_MS);
 
         if (response.ok) break;
 
-        retries--;
-        if (retries > 0) {
-          await new Promise((resolve) => setTimeout(resolve, 1000));
+        // 非 ok 响应，指数退避
+        if (attempt < MAX_RETRIES - 1) {
+          await new Promise(r => setTimeout(r, 1000 * Math.pow(2, attempt)));
         }
       } catch (fetchError) {
-        retries--;
-        if (retries === 0) throw fetchError;
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const isTimeout = fetchError instanceof DOMException && fetchError.name === 'AbortError';
+        if (attempt < MAX_RETRIES - 1) {
+          await new Promise(r => setTimeout(r, 1000 * Math.pow(2, attempt)));
+        } else {
+          throw fetchError;
+        }
       }
     }
 
     if (!response || !response.ok) {
+      console.log(JSON.stringify({
+        event: 'api_generate_error',
+        error: `deepseek_api_failed_${response?.status || 'no_response'}`,
+        latency_ms: Date.now() - startTime,
+      }));
       return NextResponse.json(
         { success: false, error: 'AI 服务调用失败，请稍后重试' },
         { status: 500 }
@@ -134,14 +159,31 @@ export async function POST(request: NextRequest) {
 
     // 验证必需字段
     if (!result.confidence_boost || !result.headline || !result.experiences) {
+      console.log(JSON.stringify({
+        event: 'api_generate_error',
+        error: 'missing_fields',
+        latency_ms: Date.now() - startTime,
+      }));
       return NextResponse.json(
         { success: false, error: 'AI 返回内容不完整，请重试' },
         { status: 500 }
       );
     }
 
+    console.log(JSON.stringify({
+      event: 'api_generate_success',
+      latency_ms: Date.now() - startTime,
+      result_length: content.length,
+      prompt_version: PROMPT_VERSION,
+    }));
+
     return NextResponse.json({ success: true, result });
   } catch (error) {
+    console.log(JSON.stringify({
+      event: 'api_generate_error',
+      error: error instanceof Error ? error.message : 'unknown',
+      latency_ms: Date.now() - startTime,
+    }));
     console.error('生成简历时出错:', error);
     return NextResponse.json(
       { success: false, error: '服务器内部错误，请稍后重试' },
