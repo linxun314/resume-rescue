@@ -4,6 +4,30 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * JS 加载兜底：如果 JS 加载失败，framer-motion 的内联 style（opacity:0）
+ * 会导致页面白屏。用 CSS !important 覆盖内联样式，2秒后强制显示。
+ * JS 正常时 framer-motion 动画在 0.5-1s 内完成，不会受影响。
+ */
+@keyframes force-visible {
+  to {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+div[style*="opacity: 0"],
+div[style*="opacity:0"],
+button[style*="opacity: 0"],
+button[style*="opacity:0"],
+label[style*="opacity: 0"],
+label[style*="opacity:0"],
+p[style*="opacity: 0"],
+p[style*="opacity:0"],
+span[style*="opacity: 0"],
+span[style*="opacity:0"] {
+  animation: force-visible 0s 2s forwards !important;
+}
+
 /* A4 纸样式 - 用于简历预览 */
 .a4-paper {
   /* A4 纸宽度：210mm */
