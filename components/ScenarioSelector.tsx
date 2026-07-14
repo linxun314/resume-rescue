@@ -41,6 +41,18 @@ const SCENARIOS: {
       '适合准备秋招/春招的你',
     ],
   },
+  {
+    key: 'graduate',
+    title: '考研',
+    subtitle: '联系导师、复试面试',
+    description: '面向导师和招生办，突出学业成绩、科研潜力和学术热情',
+    icon: '🎓',
+    features: [
+      '强调学业成绩和英语水平',
+      '用学术语言翻译科研经历',
+      '适合准备考研复试的你',
+    ],
+  },
 ];
 
 export default function ScenarioSelector({ onSelect }: ScenarioSelectorProps) {
@@ -71,7 +83,7 @@ export default function ScenarioSelector({ onSelect }: ScenarioSelectorProps) {
         </div>
 
         {/* 场景卡片 */}
-        <div className="grid md:grid-cols-2 gap-6 md:gap-8">
+        <div className="grid md:grid-cols-3 gap-6 md:gap-4">
           {SCENARIOS.map((scenario, index) => (
             <motion.button
               key={scenario.key}

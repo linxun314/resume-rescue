@@ -6,9 +6,16 @@ import ScenarioSelector from '@/components/ScenarioSelector';
 import QuestionFlow from '@/components/QuestionFlow';
 import ResultDisplay from '@/components/ResultDisplay';
 import ResumeGenerator from '@/components/ResumeGenerator';
+import GraduateBasicInfoForm from '@/components/GraduateBasicInfoForm';
+import GraduateExperienceSelector from '@/components/GraduateExperienceSelector';
+import GraduateExperienceForm from '@/components/GraduateExperienceForm';
+import GraduateResumeResult from '@/components/GraduateResumeResult';
+import type { GraduateBasicInfo } from '@/components/GraduateBasicInfoForm';
+import type { ExperienceFormData } from '@/components/GraduateExperienceForm';
 import { getQuestionsByScenario, Scenario, Question } from '@/lib/prompts';
 
-type Step = 'anxiety-relief' | 'scenario' | 'questions' | 'result' | 'generator';
+type Step = 'anxiety-relief' | 'scenario' | 'questions' | 'result' | 'generator'
+  | 'graduate-info' | 'graduate-experience-select' | 'graduate-experience-form' | 'graduate-result';
 
 export default function Home() {
   const [step, setStep] = useState<Step>('anxiety-relief');
@@ -18,6 +25,16 @@ export default function Home() {
   const [result, setResult] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  // 考研流程状态
+  const [graduateBasicInfo, setGraduateBasicInfo] = useState<GraduateBasicInfo>({
+    name: '', gender: '', phone: '', email: '', school: '', major: '',
+    degree: '本科', graduationYear: '', gpa: '', ranking: '',
+    englishLevel: '', englishScore: '', targetSchool: '', targetMajor: '',
+    targetDirection: '', examScore: '',
+  });
+  const [selectedExpTypes, setSelectedExpTypes] = useState<string[]>([]);
+  const [graduateExpData, setGraduateExpData] = useState<ExperienceFormData>({});
+
   // 从焦虑缓解页面进入场景选择
   const handleStart = () => {
     setStep('scenario');
@@ -26,8 +43,12 @@ export default function Home() {
   // 选择场景后加载对应问题集
   const handleScenarioSelect = (selectedScenario: Scenario) => {
     setScenario(selectedScenario);
-    setQuestions(getQuestionsByScenario(selectedScenario));
-    setStep('questions');
+    if (selectedScenario === 'graduate') {
+      setStep('graduate-info');
+    } else {
+      setQuestions(getQuestionsByScenario(selectedScenario));
+      setStep('questions');
+    }
   };
 
   // 完成问题后调用AI生成简历
@@ -85,6 +106,15 @@ export default function Home() {
     setQuestions([]);
     setAnswers({});
     setResult(null);
+    setSelectedExpTypes([]);
+    setGraduateExpData({});
+  };
+
+  // 切换经历类型选中状态
+  const handleToggleExpType = (typeId: string) => {
+    setSelectedExpTypes((prev) =>
+      prev.includes(typeId) ? prev.filter((t) => t !== typeId) : [...prev, typeId]
+    );
   };
 
   // 加载中状态
@@ -170,6 +200,47 @@ export default function Home() {
             />
           </div>
         </div>
+      );
+
+    case 'graduate-info':
+      return (
+        <GraduateBasicInfoForm
+          data={graduateBasicInfo}
+          onChange={setGraduateBasicInfo}
+          onBack={() => setStep('scenario')}
+          onNext={() => setStep('graduate-experience-select')}
+        />
+      );
+
+    case 'graduate-experience-select':
+      return (
+        <GraduateExperienceSelector
+          selectedTypes={selectedExpTypes}
+          onToggle={handleToggleExpType}
+          onBack={() => setStep('graduate-info')}
+          onNext={() => setStep('graduate-experience-form')}
+        />
+      );
+
+    case 'graduate-experience-form':
+      return (
+        <GraduateExperienceForm
+          selectedTypes={selectedExpTypes}
+          onDataChange={setGraduateExpData}
+          data={graduateExpData}
+          onBack={() => setStep('graduate-experience-select')}
+          onComplete={() => setStep('graduate-result')}
+        />
+      );
+
+    case 'graduate-result':
+      return (
+        <GraduateResumeResult
+          basicInfo={graduateBasicInfo}
+          experienceData={graduateExpData}
+          selectedTypes={selectedExpTypes}
+          onReset={handleReset}
+        />
       );
 
     default:

@@ -14,7 +14,7 @@ export interface Question {
 }
 
 // 场景类型
-export type Scenario = 'internship' | 'job';
+export type Scenario = 'internship' | 'job' | 'graduate';
 
 /**
  * 实习场景问题集（8个问题）
@@ -162,7 +162,9 @@ export const JOB_QUESTIONS: Question[] = [
  * 根据场景获取对应问题集
  */
 export function getQuestionsByScenario(scenario: Scenario): Question[] {
-  return scenario === 'internship' ? INTERN_QUESTIONS : JOB_QUESTIONS;
+  if (scenario === 'internship') return INTERN_QUESTIONS;
+  if (scenario === 'job') return JOB_QUESTIONS;
+  return []; // graduate 场景使用独立表单流程，不走8问题问答
 }
 
 /**

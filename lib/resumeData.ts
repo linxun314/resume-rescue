@@ -1,4 +1,5 @@
 import { Resume, ResumeMeta } from './resumeTypes';
+import { allKaoyanResumes } from './graduateResumeData';
 
 /**
  * 4类高分简历范本数据
@@ -532,12 +533,13 @@ export const techSelfLearnResume: Resume = {
   ],
 };
 
-// ==================== 导出所有简历数据 ====================
+// ==================== 导出所有简历数据（含考研范本） ====================
 export const allResumes: Resume[] = [
   generalGraduateResume,
   productOperationResume,
   businessStartupResume,
   techSelfLearnResume,
+  ...allKaoyanResumes,
 ];
 
 // ==================== 导出简历元数据 ====================
