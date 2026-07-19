@@ -1,5 +1,5 @@
 'use client';
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 export type ToastType = 'success' | 'error' | 'info';
 
@@ -29,8 +29,13 @@ export function useToast() {
     }, 3000);
   }, []);
 
-  // Register global handler
-  globalAddToast = addToast;
+  // Register global handler in useEffect (avoid side effect in render body)
+  useEffect(() => {
+    globalAddToast = addToast;
+    return () => {
+      globalAddToast = null;
+    };
+  }, [addToast]);
 
   const removeToast = useCallback((id: number) => {
     setToasts(prev => prev.filter(t => t.id !== id));

@@ -1,7 +1,8 @@
 // app/api/generate/route.ts - API路由（Few-Shot增强版）
 import { NextRequest, NextResponse } from 'next/server';
-import { RESUME_SYSTEM_PROMPT, RESUME_USER_PROMPT_TEMPLATE, Scenario } from '@/lib/prompts';
+import { RESUME_SYSTEM_PROMPT, RESUME_USER_PROMPT_TEMPLATE, RESUME_BASIC_INFO_PROMPT, Scenario } from '@/lib/prompts';
 import { generateFewShotPrompt } from '@/lib/fewShotPromptGenerator';
+import { selectFewShotExamples } from '@/lib/fewShotExamples';
 
 const PROMPT_VERSION = 'v1.2'; // 当前 Prompt 版本
 const API_TIMEOUT_MS = 30000;  // 30秒超时
@@ -21,13 +22,16 @@ export async function POST(request: NextRequest) {
   const startTime = Date.now();
   try {
     const body = await request.json();
-    const { answers, scenario } = body;
+    const { answers, scenario, basicInfo, selectedJob, reflection } = body;
+
+    const isBasicInfoFlow = basicInfo && selectedJob;
 
     console.log(JSON.stringify({
       event: 'api_generate_called',
       scenario,
+      flow: isBasicInfoFlow ? 'basic-info' : 'questions',
       prompt_version: PROMPT_VERSION,
-      question_count: Object.keys(answers || {}).length,
+      question_count: isBasicInfoFlow ? 0 : Object.keys(answers || {}).length,
       timestamp: new Date().toISOString(),
     }));
 
@@ -41,32 +45,54 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 构建用户提示词 - 使用Few-Shot Prompt生成器
-    // 用户回答字段是 q1, q2, q3... 格式
-    const major = answers.q1 || '未提供';
-    const direction = answers.direction || '未提供';
-    const targetJob = `${major}相关${direction !== '未提供' ? `·${direction}` : ''}岗位`;
+    // 构建用户提示词
+    let userPrompt: string;
 
-    // 整合用户回答为经历描述（排除q1，因为它是专业信息）
-    const answersText = Object.entries(answers)
-      .filter(([key]) => key !== 'q1' && key !== 'direction')
-      .map(([key, value]) => `${key.toUpperCase()}: ${value}`)
-      .join('\n');
+    if (isBasicInfoFlow) {
+      // 新流程：基础信息 + 8问回答 + 选定岗位
+      const answersText = Object.entries(answers || {})
+        .map(([key, value]) => `${key}: ${value}`)
+        .join('\n');
 
-    // 生成Few-Shot Prompt
-    const fewShotPrompt = generateFewShotPrompt(
-      answersText || '未提供',
-      targetJob,
-      {
-        name: '用户',
-        education: '某大学',
-        major: major,
-        graduationYear: '2025',
-      }
-    );
+      const promptText = RESUME_BASIC_INFO_PROMPT
+        .replace(/\{\{major\}\}/g, basicInfo.major || '未提供')
+        .replace(/\{\{workInMajor\}\}/g, basicInfo.workInMajor ? '是，想从事本专业' : '否，想跨专业求职')
+        .replace(/\{\{skills\}\}/g, basicInfo.skills || '未提供')
+        .replace(/\{\{selectedJob\}\}/g, selectedJob)
+        .replace(/\{\{scenario\}\}/g, scenario === 'internship' ? '找实习' : '找工作')
+        .replace(/\{\{answers\}\}/g, answersText || '未提供')
+        + (reflection ? `\n\n【用户的自我反思】\n用户觉得最有价值的经历：${reflection}\n（请特别关注这条经历，它是用户自己认可的价值点）` : '');
 
-    // 使用Few-Shot Prompt作为用户提示词
-    const userPrompt = fewShotPrompt;
+      // 附加 few-shot 示例帮助 AI 理解输出格式
+      const examples = selectFewShotExamples(
+        `${basicInfo.major} ${basicInfo.skills || ''} ${selectedJob}`,
+        selectedJob,
+        2
+      );
+      const examplesText = examples.length > 0
+        ? `\n\n<参考示例（学习格式，不要照搬内容）>\n${examples.map((ex, i) =>
+            `示例${i + 1}（${ex.category}）：\n输入："${ex.input}"\n输出：\n${ex.output}`
+          ).join('\n\n')}\n</参考示例>`
+        : '';
+
+      userPrompt = promptText + examplesText;
+    } else {
+      // 旧流程：8 问题问答
+      const major = answers.q1 || '未提供';
+      const direction = answers.direction || '未提供';
+      const targetJob = `${major}相关${direction !== '未提供' ? `·${direction}` : ''}岗位`;
+
+      const answersText = Object.entries(answers)
+        .filter(([key]) => key !== 'q1' && key !== 'direction')
+        .map(([key, value]) => `${key.toUpperCase()}: ${value}`)
+        .join('\n');
+
+      userPrompt = generateFewShotPrompt(
+        answersText || '未提供',
+        targetJob,
+        { name: '用户', education: '某大学', major, graduationYear: '2025' }
+      );
+    }
 
     // 调用 DeepSeek API（带超时+指数退避重试）
     let response;
@@ -158,7 +184,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 验证必需字段
-    if (!result.confidence_boost || !result.headline || !result.experiences) {
+    if (!result.confidence_boost || !result.summary || !result.experiences) {
       console.log(JSON.stringify({
         event: 'api_generate_error',
         error: 'missing_fields',

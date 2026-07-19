@@ -1,14 +1,174 @@
-/* 全局样式文件 */
-/* 引入 Tailwind CSS 的基础、组件和工具类 */
+/* ===== 高端视觉设计系统 ===== */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/*
- * JS 加载兜底：如果 JS 加载失败，framer-motion 的内联 style（opacity:0, scale:0）
- * 会导致页面白屏。用 CSS !important 覆盖内联样式，2秒后强制显示。
- * JS 正常时 framer-motion 动画在 0.5-1s 内完成，不会受影响。
- */
+/* ===== Base Layer ===== */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    overscroll-behavior: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    touch-action: manipulation;
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  input, textarea, select, [contenteditable] {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  *:focus-visible {
+    outline: 2px solid #6d4fff;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* ===== Components Layer ===== */
+@layer components {
+  /* --- Button Architecture --- */
+
+  /* Primary pill button with nested icon pattern */
+  .btn-primary {
+    @apply relative inline-flex items-center justify-center gap-2
+           px-6 py-3.5 rounded-full font-semibold text-sm
+           bg-surface-900 text-white
+           shadow-card hover:shadow-card-hover
+           transition-all duration-500 ease-premium
+           active:scale-[0.97]
+           min-h-touch select-none;
+    letter-spacing: 0.01em;
+  }
+
+  /* Secondary ghost button */
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2
+           px-6 py-3.5 rounded-full font-medium text-sm
+           bg-white/60 backdrop-blur-sm text-surface-700
+           ring-1 ring-surface-200
+           hover:bg-white/80 hover:ring-surface-300
+           transition-all duration-500 ease-premium
+           active:scale-[0.97]
+           min-h-touch select-none;
+  }
+
+  /* Ghost tertiary */
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2
+           px-4 py-2.5 rounded-full font-medium text-sm
+           text-surface-500 hover:text-surface-700
+           hover:bg-surface-100
+           transition-all duration-500 ease-premium
+           min-h-touch select-none;
+  }
+
+  /* --- Card Architecture: Double-Bezel (Doppelrand) --- */
+
+  /* Outer shell */
+  .card-shell {
+    @apply relative rounded-card-xl bg-white/40 backdrop-blur-xl
+           ring-1 ring-black/[0.04]
+           shadow-[0_0_0_1px_rgba(0,0,0,0.02),0_2px_4px_rgba(0,0,0,0.02),0_12px_24px_rgba(0,0,0,0.03)]
+           p-[1.5px];
+  }
+
+  /* Inner core */
+  .card-core {
+    @apply bg-white/90 rounded-[calc(2.5rem-1.5px)]
+           shadow-inner-highlight
+           p-6 md:p-8;
+  }
+
+  /* Simplified card (single layer, for less prominent elements) */
+  .card {
+    @apply bg-white/80 backdrop-blur-sm
+           rounded-card-lg
+           ring-1 ring-black/[0.04]
+           shadow-card
+           p-5 md:p-6;
+  }
+
+  /* --- Form Architecture --- */
+
+  .form-input {
+    @apply w-full px-4 py-3.5
+           bg-surface-50
+           border-0
+           rounded-input
+           text-surface-800 placeholder-surface-400
+           ring-1 ring-surface-200
+           focus:outline-none focus:ring-2 focus:ring-brand-400 focus:bg-white
+           transition-all duration-300 ease-premium
+           text-sm;
+  }
+
+  .form-textarea {
+    @apply form-input resize-none;
+  }
+
+  /* --- Utility Classes --- */
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 16px);
+  }
+
+  .safe-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Eyebrow badge */
+  .eyebrow {
+    @apply inline-flex items-center gap-1.5
+           px-3 py-1 rounded-full
+           text-2xs font-semibold uppercase
+           tracking-[0.15em]
+           bg-brand-50 text-brand-600
+           ring-1 ring-brand-100;
+  }
+}
+
+/* ===== Utilities Layer ===== */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .text-truncate {
+    @apply overflow-hidden text-ellipsis whitespace-nowrap;
+  }
+}
+
+/* ===== JS Fallback — force visible after 2s if framer-motion fails ===== */
 @keyframes force-visible {
   to {
     opacity: 1 !important;
@@ -16,7 +176,6 @@
   }
 }
 
-/* 强制所有可能被 framer-motion 隐藏的元素在 2 秒后可见 */
 div[style*="opacity: 0"],
 div[style*="opacity:0"],
 div[style*="scale(0)"],
@@ -31,95 +190,26 @@ span[style*="opacity:0"] {
   animation: force-visible 0s 2s forwards !important;
 }
 
-/* A4 纸样式 - 用于简历预览 */
-.a4-paper {
-  /* A4 纸宽度：210mm */
-  width: 210mm;
-  /* A4 纸最小高度：297mm */
-  min-height: 297mm;
-  /* 白色背景 */
-  background: white;
-  /* 阴影效果，模拟纸张立体感 */
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-  /* 水平居中 */
-  margin: 0 auto;
-  /* 内边距：15mm */
-  padding: 15mm;
-}
-
-/* 打印样式 - 隐藏非打印区域，只显示简历内容 */
+/* ===== Print Styles ===== */
 @media print {
-  /* 隐藏页面上所有元素 */
-  body * {
-    visibility: hidden;
-  }
-
-  /* 显示打印区域及其子元素 */
-  .print-area,
-  .print-area * {
-    visibility: visible;
-  }
-
-  /* 打印区域定位到页面左上角 */
+  body * { visibility: hidden; }
+  .print-area, .print-area * { visibility: visible; }
   .print-area {
-    /* 绝对定位 */
     position: absolute;
-    /* 左对齐 */
     left: 0;
-    /* 顶部对齐 */
     top: 0;
-    /* 占满整页宽度 */
     width: 100%;
-    /* 取消外边距 */
     margin: 0;
-    /* 取消内边距 */
     padding: 0;
-    /* 取消阴影 */
     box-shadow: none;
   }
 }
 
-/* 自定义滚动条样式 */
-::-webkit-scrollbar {
-  /* 滚动条宽度 */
-  width: 6px;
-}
+/* ===== Custom Scrollbar ===== */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d4d4d4; border-radius: 2px; }
 
-/* 滚动条轨道 */
-::-webkit-scrollbar-track {
-  /* 浅灰色背景 */
-  background: #f1f5f9;
-}
-
-/* 滚动条滑块 */
-::-webkit-scrollbar-thumb {
-  /* 灰色滑块 */
-  background: #94a3b8;
-  /* 圆角 */
-  border-radius: 3px;
-}
-
-/* 脉冲动画 - 用于当前步骤的进度点 */
-@keyframes pulse-animation {
-  /* 动画开始：正常大小 */
-  0% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  /* 动画中间：放大并变透明 */
-  50% {
-    transform: scale(1.2);
-    opacity: 0.7;
-  }
-  /* 动画结束：恢复原状 */
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-/* 应用脉冲动画的类 */
-.animate-pulse-custom {
-  /* 使用上面定义的脉冲动画 */
-  animation: pulse-animation 1.5s ease-in-out infinite;
+@media screen and (max-width: 768px) {
+  ::-webkit-scrollbar { width: 0; display: none; }
 }

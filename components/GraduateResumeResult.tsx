@@ -22,6 +22,78 @@ export default function GraduateResumeResult({
 }: GraduateResumeResultProps) {
   const [copied, setCopied] = useState(false);
 
+  // 按经历类型结构化格式化
+  const formatExperience = (typeId: string, data: Record<string, string>): string => {
+    const v = (id: string) => (data[id] || '').trim();
+    const has = (id: string) => v(id).length > 0;
+
+    switch (typeId) {
+      case 'paper': {
+        const parts = [v('title'), v('journal'), v('author'), v('impact')].filter(Boolean);
+        return parts.length > 0 ? `- ${parts.join(' | ')}\n` : '';
+      }
+      case 'research-project': {
+        let line = v('lab');
+        if (has('direction')) line += (line ? ' | ' : '') + v('direction');
+        if (line) return `- ${line}\n` +
+          (has('role') ? `- 负责：${v('role')}\n` : '') +
+          (has('method') ? `- 方法：${v('method')}\n` : '') +
+          (has('result') ? `- 成果：${v('result')}\n` : '');
+        return '';
+      }
+      case 'competition': {
+        let line = v('name');
+        if (has('award')) line += (line ? ' | ' : '') + v('award');
+        if (line) return `- ${line}\n` +
+          (has('topic') ? `- 题目：${v('topic')}\n` : '') +
+          (has('role') ? `- 贡献：${v('role')}\n` : '') +
+          (has('method') ? `- 方法：${v('method')}\n` : '');
+        return '';
+      }
+      case 'course-project': {
+        let line = v('course');
+        if (has('topic')) line += (line ? ' | ' : '') + v('topic');
+        if (line) return `- ${line}\n` +
+          (has('role') ? `- 角色：${v('role')}\n` : '') +
+          (has('method') ? `- 技术：${v('method')}\n` : '') +
+          (has('result') ? `- 成果：${v('result')}\n` : '');
+        return '';
+      }
+      case 'internship': {
+        let line = v('company');
+        if (line) return `- ${line}\n` +
+          (has('work') ? `- 工作：${v('work')}\n` : '') +
+          (has('skill') ? `- 技能：${v('skill')}\n` : '') +
+          (has('result') ? `- 成果：${v('result')}\n` : '');
+        return '';
+      }
+      case 'self-learning': {
+        let line = v('topic');
+        if (has('path')) line += (line ? ' | ' : '') + `通过${v('path')}`;
+        if (line) return `- ${line}\n` +
+          (has('level') ? `- 水平：${v('level')}\n` : '') +
+          (has('output') ? `- 产出：${v('output')}\n` : '');
+        return '';
+      }
+      case 'honor': {
+        const parts = [v('name'), v('level'), v('time')].filter(Boolean);
+        return parts.length > 0 ? `- ${parts.join(' | ')}\n` : '';
+      }
+      case 'student-work': {
+        let line = v('org');
+        if (line) return `- ${line}\n` +
+          (has('activity') ? `- 活动：${v('activity')}\n` : '') +
+          (has('result') ? `- 成果：${v('result')}\n` : '');
+        return '';
+      }
+      default:
+        return Object.values(data)
+          .filter((val) => val && val.trim())
+          .map((val) => `- ${val}\n`)
+          .join('');
+    }
+  };
+
   // 生成简历文本
   const generateResumeText = () => {
     let resume = '';
@@ -76,11 +148,7 @@ export default function GraduateResumeResult({
       const hasData = Object.values(data).some((v) => v && v.trim());
       if (hasData) {
         resume += `**${typeNames[typeId] || typeId}**\n`;
-        Object.entries(data).forEach(([, value]) => {
-          if (value && value.trim()) {
-            resume += `- ${value}\n`;
-          }
-        });
+        resume += formatExperience(typeId, data);
         resume += '\n';
       }
     });

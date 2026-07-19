@@ -76,15 +76,12 @@ function constructOriginalInput(exp: any): string {
 }
 
 /**
- * 构造STAR格式的输出
+ * 构造 bullet point 格式的输出（真实简历格式，无 STAR 标签）
  */
 function constructSTAROutput(exp: any): string {
   return `**${exp.title}** | ${exp.role} | ${exp.period}
 
-**情境(S)**：${exp.situation}
-**任务(T)**：${exp.task}
-**行动(A)**：${exp.action}
-**结果(R)**：${exp.result}`;
+- ${exp.action}，${exp.result}`;
 }
 
 /**
@@ -303,13 +300,12 @@ export function getExampleExplanation(example: FewShotExample): string {
 **原始表达（弱动词）：**
 "${example.input}"
 
-**STAR优化后（强动词+量化）：**
+**优化后（强动词+量化）：**
 ${example.output}
 
 **优化要点：**
-- 情境(S)：明确背景和问题
-- 任务(T)：说明你的职责
-- 行动(A)：用强动词描述具体行动
-- 结果(R)：量化成果，用具体数字
+- 强动词开头（策划/主导/构建/优化）
+- 具体行动描述，不空泛
+- 量化结果收尾（数字/百分比/时间）
 `;
 }

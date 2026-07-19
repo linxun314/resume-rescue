@@ -32,10 +32,11 @@ export function generateFewShotPrompt(
 
 <writing_standards>
 简历撰写标准：
-1. STAR法则：情境(S)-任务(T)-行动(A)-结果(R)
-2. 强动词：用"策划"、"优化"、"建立"替代"参与"、"协助"
-3. 量化成果：用具体数字展示结果（如提升25%、增长75%）
-4. 真实性：只翻译真实经历，绝不虚构
+1. 强动词开头：用"策划""优化""主导"替代"参与""协助"
+2. 量化成果：用具体数字展示结果（如提升25%、增长75%）
+3. 真实性：只翻译真实经历，绝不虚构
+4. bullet point 格式：每条 bullet 是完整的一句话，动词开头，结果收尾
+5. 禁止出现"情境(S)""任务(T)"等教学标签，直接输出成品简历格式
 </writing_standards>
 
 <few_shot_examples>
@@ -71,29 +72,33 @@ ${userInput}
     "growth_mindset": "成长型思维引导",
     "abilities": ["能力1", "能力2", "能力3"]
   },
-  "headline": {
-    "realistic": "真实描述",
-    "optimized": "优化后描述"
-  },
+  "summary": "3句话核心简介：学校+专业+核心能力+目标方向",
   "experiences": [
     {
       "title": "经历名称",
+      "organization": "所属组织/课程/比赛",
       "role": "角色",
-      "realistic": "原始描述",
-      "optimized": "STAR优化后描述",
-      "abilities": ["能力标签1", "能力标签2"],
-      "impact": "实际影响"
+      "period": "时间跨度",
+      "bullets": [
+        "强动词开头+具体行动+量化结果的完整bullet",
+        "第二条bullet"
+      ],
+      "real_ability": "这条经历证明的真实能力（诚实评估）",
+      "gap": "距离目标岗位的差距（没有则留空）"
     }
   ],
   "skills": {
-    "realistic": ["原始技能"],
-    "optimized": ["优化后技能"]
+    "professional": ["Python（2年）", "SQL（1年）"],
+    "general": ["数据分析", "跨团队协作"]
   },
-  "self_evaluation": {
-    "realistic": "原始自我评价",
-    "optimized": "优化后自我评价"
-  },
-  "interview_tips": ["面试建议1", "面试建议2", "面试建议3"]
+  "interview_tips": ["面试建议1", "面试建议2", "面试建议3"],
+  "job_fit": {
+    "match_level": "高/中/低",
+    "relevant_experiences": ["相关经历"],
+    "transferable_experiences": ["可迁移经历"],
+    "gap_analysis": "差距分析",
+    "suggestion": "下一步建议"
+  }
 }
 </output_format>`;
 
@@ -119,13 +124,10 @@ function getLearningPoints(example: FewShotExample): string {
     points.push('量化成果，用具体数字展示结果');
   }
 
-  // 检查是否包含STAR结构
-  const hasSTAR = example.output.includes('情境') ||
-    example.output.includes('任务') ||
-    example.output.includes('行动') ||
-    example.output.includes('结果');
-  if (hasSTAR) {
-    points.push('遵循STAR结构，明确情境、任务、行动、结果');
+  // 检查是否使用 bullet point 格式
+  const hasBullet = example.output.includes('- ') || example.output.includes('• ');
+  if (hasBullet) {
+    points.push('使用 bullet point 格式，每条以动词开头');
   }
 
   // 检查是否有简洁表达
@@ -148,9 +150,9 @@ export function generateProjectExperiencePrompt(
 
   const examples = selectFewShotExamples(projectDescription, '通用', 2);
 
-  return `<role>简历撰写专家，擅长用STAR法则优化项目经历描述</role>
+  return `<role>简历撰写专家，擅长用bullet point格式优化项目经历描述</role>
 
-<task>将用户的项目经历转化为职场语言，使用STAR法则</task>
+<task>将用户的项目经历转化为职场语言，使用bullet point格式</task>
 
 <few_shot_examples>
 ${examples.map((example, index) => `
@@ -170,10 +172,7 @@ ${examples.map((example, index) => `
 <output_format>
 **${projectName}** | ${userRole} | ${projectTime}
 
-- 情境(S)：[提取背景]
-- 任务(T)：[提取职责]
-- 行动(A)：[用强动词描述行动]
-- 结果(R)：[量化成果]
+- [强动词开头]，[具体行动]，[量化结果]
 </output_format>
 
 请生成优化后的项目经历描述：`;
@@ -191,9 +190,9 @@ export function generateCampusPracticePrompt(
 
   const examples = selectFewShotExamples(practiceDescription, '通用', 2);
 
-  return `<role>简历撰写专家，擅长用STAR法则优化校园实践描述</role>
+  return `<role>简历撰写专家，擅长用bullet point格式优化校园实践描述</role>
 
-<task>将用户的校园实践转化为职场语言，使用STAR法则</task>
+<task>将用户的校园实践转化为职场语言，使用bullet point格式</task>
 
 <few_shot_examples>
 ${examples.map((example, index) => `

@@ -1,30 +1,49 @@
-// 根布局文件 - 所有页面的父级布局
-// 引入全局样式
+// 根布局文件 — 高端视觉设计系统
 import "./globals.css";
+import { Plus_Jakarta_Sans } from "next/font/google";
 
-// 元数据配置
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-jakarta",
+  display: "swap",
+});
+
 export const metadata = {
-  // 页面标题
   title: "三无简历急救室",
-  // 页面描述
   description: "帮助没有实习、项目、竞赛的大学生，通过8步对话挖掘经历，生成STAR法则简历文案",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "三无简历急救室",
+  },
 };
 
-/**
- * 根布局组件
- * @param children - 子页面内容
- */
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  themeColor: "#6d4fff",
+};
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    // HTML 根元素，设置语言为中文
-    <html lang="zh-CN">
-      {/* body 样式：最小高度占满屏幕、浅灰背景、深灰文字、抗锯齿渲染 */}
-      <body className="min-h-screen bg-slate-100 text-slate-900 antialiased">
-        {/* 渲染子页面内容 */}
+    <html lang="zh-CN" className={`scroll-smooth ${jakarta.variable}`}>
+      <head>
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover"
+        />
+        <meta name="theme-color" content="#6d4fff" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      </head>
+      <body className="min-h-screen bg-surface text-surface-900 antialiased safe-top">
         {children}
       </body>
     </html>

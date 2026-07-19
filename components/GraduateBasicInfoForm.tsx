@@ -74,14 +74,15 @@ export default function GraduateBasicInfoForm({ data, onChange, onBack, onNext }
             基本信息
           </h2>
 
-          {/* 个人信息 */}
+          {/* 个人信息（选填） */}
           <div className="mb-6">
             <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b border-gray-200">
               个人信息
+              <span className="text-xs text-gray-400 ml-2">选填，生成的简历中会包含联系方式，不想填可跳过</span>
             </h3>
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="text-sm text-gray-600 mb-1 block">姓名 *</label>
+                <label className="text-sm text-gray-600 mb-1 block">姓名</label>
                 <input
                   type="text"
                   value={data.name}
@@ -103,7 +104,7 @@ export default function GraduateBasicInfoForm({ data, onChange, onBack, onNext }
                 </select>
               </div>
               <div>
-                <label className="text-sm text-gray-600 mb-1 block">手机号 *</label>
+                <label className="text-sm text-gray-600 mb-1 block">手机号</label>
                 <input
                   type="tel"
                   value={data.phone}
@@ -113,7 +114,7 @@ export default function GraduateBasicInfoForm({ data, onChange, onBack, onNext }
                 />
               </div>
               <div>
-                <label className="text-sm text-gray-600 mb-1 block">邮箱 *</label>
+                <label className="text-sm text-gray-600 mb-1 block">邮箱</label>
                 <input
                   type="email"
                   value={data.email}
